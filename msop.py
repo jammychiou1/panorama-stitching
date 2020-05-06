@@ -10,17 +10,17 @@ def biliear_interpolation(arr, xs, ys):
         xs, ys: array-like (list or numpy array). x coordinates and y coordinates.
                                  
                   y= 
-                    0   w
+                    0  w-1
                 x=0 +---+
                     |   |
                     |   |
-                  h +---+   
+                h-1 +---+   
 
     Output:
         sampled_image: numpy array. same shape as xs, ys if image is grayscale. for RGB image, the shape would be [xs.shape[0], xs.shape[1], ..., xs.shape[d], 3]
         inside: numpy array. same shape as xs, ys. represents how much the sample is inside the image.
                 0: outside the image with 1 pixel margin
-                1: inside the image (0 < x < h && 0 < y < w)
+                1: inside the image (0 < x < h-1 && 0 < y < w-1)
                 0 < inside < 1: outside but within 1 pixel margin. decays linearly on the edge, bilinearly on the corner.
                     for example: (x,y) = (-0.5, -0.5)   inside = 0.25
                                  (x,y) = (-0.5,  0.5)   inside = 0.5
@@ -74,11 +74,11 @@ def msop(img_name, base_lvl = 1):
         feature_xs, feature_ys: list of numpy arrays. feature_xs[0] is the x coodinates of features on level=base_lvl, feature_xs[1] on level=base_lvl+1 ...
         
                   y= 
-                    0   w
+                    0  w-1
                 x=0 +---+
                     |   |
                     |   |
-                  h +---+
+                h-1 +---+
                     
         discriptors: list of numpy arrays with shape = (features_count, 8, 8)
     '''
