@@ -61,7 +61,25 @@ def bipartite(features_1, features_2):
             edges.append(None)
     return edges
     
-def get_model(features_1, features_2, img_w, img_h):
+def get_model(features_1, features_2, img_w, img_h, focal_length):
+    '''
+    Input:
+        features_1, features_2: msop feature returned by msop.msop() (as a tuple (feature_xs, feature_ys, discriptors))
+        img_w: width of image
+        img_h: height of image
+        focal_length: focal length
+    Output:
+        delta_x, delta_y: computed displacement
+            xs2 = xs1 + delta_x
+            ys2 = ys1 + delta_y
+            i.e. if center of image 1 is at (0, 0), center of image 2 should be at (delta_x, delta_y)
+            
+                y
+                ^
+                |                
+                |
+                +----> x
+    '''
     edges = bipartite(features_1, features_2)
     adj_list1 = []
     adj_list2 = []
@@ -91,8 +109,8 @@ def get_model(features_1, features_2, img_w, img_h):
     #print(eg_list)
     xs1, ys1 = ys1 - (img_w - 1) / 2, -(xs1 - (img_h - 1) / 2)
     xs2, ys2 = ys2 - (img_w - 1) / 2, -(xs2 - (img_h - 1) / 2)
-    xs1, ys1 = projection.cylindrical_projection(xs1, ys1, 837 * 4)
-    xs2, ys2 = projection.cylindrical_projection(xs2, ys2, 837 * 4)
+    xs1, ys1 = projection.cylindrical_projection(xs1, ys1, focal_length)
+    xs2, ys2 = projection.cylindrical_projection(xs2, ys2, focal_length)
     bst_delta_x = 0
     bst_delta_y = 0
     bst_inliers = []
@@ -119,6 +137,8 @@ def get_model(features_1, features_2, img_w, img_h):
     print(bst_delta_x, bst_delta_y)
     print(len(bst_inliers))
     
+    
+    # draw overlayed image and inliers/outliers matchings
     name1 = 'pack2_rot/IMG_0027.JPG'
     name2 = 'pack2_rot/IMG_0018.JPG'
     im1 = Image.open(name1)
@@ -132,7 +152,7 @@ def get_model(features_1, features_2, img_w, img_h):
             xs[i, j] = i
             ys[i, j] = j
     xs, ys = ys - (img_w - 1) / 2, -(xs - (img_h - 1) / 2)
-    xs, ys = projection.planar_projection(xs, ys, 837 * 4)
+    xs, ys = projection.planar_projection(xs, ys, focal_length)
     xs, ys = - ys + (img_h - 1) / 2, xs + (img_w - 1) / 2
     projected1, inside = msop.biliear_interpolation(arr1, xs, ys)
     projected1 *= inside[..., np.newaxis]
@@ -176,7 +196,9 @@ if __name__ == '__main__':
     im1 = Image.open(name1)
     arr1 = np.asarray(im1)
     
-    get_model(feat1, feat2, arr1.shape[1], arr1.shape[0])
+    get_model(feat1, feat2, arr1.shape[1], arr1.shape[0], 4*837)
+    
+    # draw separate image and candidate match
     '''
     edges = bipartite(feat1, feat2)
     im1 = Image.open(name1)
