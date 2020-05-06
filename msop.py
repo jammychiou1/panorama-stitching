@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import ndimage
 from PIL import Image
+
 def biliear_interpolation(arr, xs, ys):
     xs = np.asarray(xs)
     ys = np.asarray(ys)
@@ -30,6 +31,12 @@ def biliear_interpolation(arr, xs, ys):
     wur = (xs-us) * (rs-ys)
     wdl = (ds-xs) * (ys-ls)
     wdr = (ds-xs) * (rs-ys)
+    
+    #print(list(xs.shape) + [1] * (len(arr.shape) - 2))
+    wul = wul.reshape(list(xs.shape) + [1] * (len(arr.shape) - 2))
+    wur = wur.reshape(list(xs.shape) + [1] * (len(arr.shape) - 2))
+    wdl = wdl.reshape(list(xs.shape) + [1] * (len(arr.shape) - 2))
+    wdr = wdr.reshape(list(xs.shape) + [1] * (len(arr.shape) - 2))
     
     res = Iul * wul + Iur * wur + Idl * wdl + Idr * wdr
     
