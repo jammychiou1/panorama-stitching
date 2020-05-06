@@ -109,7 +109,7 @@ def get_model(features_1, features_2, img_w, img_h):
         delta_y /= k
         inliers = []
         for k, (a, b) in enumerate(eg_list):
-            if ((xs1[a] - xs2[b] - delta_x) ** 2 + (ys1[a] - ys2[b] - delta_y) ** 2) ** 0.5 < 5:
+            if ((xs1[a] - xs2[b] - delta_x) ** 2 + (ys1[a] - ys2[b] - delta_y) ** 2) ** 0.5 < 10:
                 inliers.append(k)
         if len(inliers) > len(bst_inliers):
             bst_delta_x = delta_x
@@ -119,8 +119,8 @@ def get_model(features_1, features_2, img_w, img_h):
     print(bst_delta_x, bst_delta_y)
     print(len(bst_inliers))
     
-    name1 = 'pack2_rot/IMG_0023.JPG'
-    name2 = 'pack2_rot/IMG_0024.JPG'
+    name1 = 'pack2_rot/IMG_0027.JPG'
+    name2 = 'pack2_rot/IMG_0018.JPG'
     im1 = Image.open(name1)
     arr1 = np.asarray(im1) / 255
     im2 = Image.open(name2)
@@ -144,6 +144,13 @@ def get_model(features_1, features_2, img_w, img_h):
     ax.imshow(projected1, extent=(-img_w / 2, img_w / 2, -img_h / 2, img_h / 2))
     #axes[0].scatter()
     ax.imshow(projected2, extent=(-img_w / 2 + bst_delta_x, img_w / 2 + bst_delta_x, -img_h / 2 + bst_delta_y, img_h / 2 + bst_delta_y))
+    #ax.scatter(xs1, ys1)
+    #ax.scatter(xs2 + bst_delta_x, ys2 + bst_delta_y)
+    for i, (a, b) in enumerate(eg_list):
+        if i in bst_inliers:
+            ax.plot([xs1[a], xs2[b] + bst_delta_x], [ys1[a], ys2[b] + bst_delta_y], color='r')
+        else:
+            ax.plot([xs1[a], xs2[b] + bst_delta_x], [ys1[a], ys2[b] + bst_delta_y], color='b')
     ax.set_xlim(-img_w / 2, img_w / 2 + bst_delta_x)
     ax.set_ylim(-img_h / 2, img_h / 2 + bst_delta_y)
     plt.show()
@@ -152,9 +159,9 @@ def get_model(features_1, features_2, img_w, img_h):
 if __name__ == '__main__':
     #name1 = 'parrington/prtn02.jpg'
     #name2 = 'parrington/prtn01.jpg'
-    name1 = 'pack2_rot/IMG_0023.JPG'
-    name2 = 'pack2_rot/IMG_0024.JPG'
-    if 0 == 1:
+    name1 = 'pack2_rot/IMG_0027.JPG'
+    name2 = 'pack2_rot/IMG_0018.JPG'
+    if 1 == 1:
         feat1 = msop.msop(name1, 1)
         feat2 = msop.msop(name2, 1)
 
