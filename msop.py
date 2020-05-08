@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from scipy import ndimage
 from PIL import Image
 
-def biliear_interpolation(arr, xs, ys):
+def bilinear_interpolation(arr, xs, ys):
     '''
     Input:
         arr: numpy array. image data. shape = (h, w) for grayscale or (h, w, 3) for RGB.
@@ -144,8 +144,8 @@ def msop(img_name, base_lvl = 1):
         print('feature count: {}'.format(interest_x.shape[0]))
         
         gbx, gby = np.gradient(ndimage.gaussian_filter(arr, 4.5))
-        vx = biliear_interpolation(gbx, interest_x, interest_y)[0]
-        vy = biliear_interpolation(gby, interest_x, interest_y)[0]
+        vx = bilinear_interpolation(gbx, interest_x, interest_y)[0]
+        vy = bilinear_interpolation(gby, interest_x, interest_y)[0]
         norm = (vx ** 2 + vy ** 2) ** 0.5
         vx /= norm + 1e-9
         vy /= norm + 1e-9
@@ -159,7 +159,7 @@ def msop(img_name, base_lvl = 1):
         for i in range(interest_x.shape[0]):            
             tmpx = interest_x[i] + vx[i] * sxs - vy[i] * sys
             tmpy = interest_y[i] + vy[i] * sxs + vx[i] * sys
-            samples, inside = biliear_interpolation(disc_sample, tmpx, tmpy)
+            samples, inside = bilinear_interpolation(disc_sample, tmpx, tmpy)
             stay[i] = np.any(inside < 0.8)
             mean, std = np.mean(samples), np.std(samples)
             samples = (samples - mean) / (std + 1e-9)
