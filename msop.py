@@ -15,7 +15,6 @@ def biliear_interpolation(arr, xs, ys):
                     |   |
                     |   |
                 h-1 +---+   
-
     Output:
         sampled_image: numpy array. same shape as xs, ys if image is grayscale. for RGB image, the shape would be [xs.shape[0], xs.shape[1], ..., xs.shape[d], 3]
         inside: numpy array. same shape as xs, ys. represents how much the sample is inside the image.

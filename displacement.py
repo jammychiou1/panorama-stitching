@@ -4,19 +4,21 @@ from scipy import ndimage
 from PIL import Image
 import msop
 import motion
-def displacement(filenames):
-	displacement = [[0,0]]
+def displacement(filenames,focal_length):
+	displace = [np.asarray([0,0])]
 	for i in range(len(filenames) - 1):
 		im = Image.open(filenames[i])
 		arr = np.asarray(im)
-		deltax, deltay = motion.get_model(msop.msop(filenames[i]), msop.msop(filenames[i+1]), arr.shape[1], arr.shape[0])
+		deltay, deltax = motion.get_model(msop.msop(filenames[i]), msop.msop(filenames[i+1]), arr.shape[1], arr.shape[0], focal_length)
+		deltax = -deltax
 		deltax += displacement[-1][0]
 		deltay += displacement[-1][1]
-		displacement.append([deltax, deltay])
+		displace.append(np.asarray([deltax, deltay]))
 	im = Image.open(filenames[-1])
 	arr = np.asarray(im)
 	deltax, deltay = motion.get_model(msop.msop(filenames[-1]), msop.msop(filenames[0]), arr.shape[1], arr.shape[0])
 	deltax += displacement[-1][0]
 	deltay += displacement[-1][1]
-	displacement.append([deltax, deltay])
-	return displacement
+	displace.append(np.asarray([deltax, deltay]))
+	displace = np.asarray(displace)
+	return displace
