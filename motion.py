@@ -154,10 +154,10 @@ def get_model(features_1, features_2, img_w, img_h, focal_length):
     xs, ys = ys - (img_w - 1) / 2, -(xs - (img_h - 1) / 2)
     xs, ys = projection.planar_projection(xs, ys, focal_length)
     xs, ys = - ys + (img_h - 1) / 2, xs + (img_w - 1) / 2
-    projected1, inside = msop.biliear_interpolation(arr1, xs, ys)
+    projected1, inside = msop.bilinear_interpolation(arr1, xs, ys)
     projected1 *= inside[..., np.newaxis]
     projected1 = np.concatenate([projected1, inside[..., np.newaxis]], 2)
-    projected2, inside = msop.biliear_interpolation(arr2, xs, ys)
+    projected2, inside = msop.bilinear_interpolation(arr2, xs, ys)
     projected2 *= inside[..., np.newaxis]
     projected2 = np.concatenate([projected2, inside[..., np.newaxis]], 2)
     fig, ax = plt.subplots()
