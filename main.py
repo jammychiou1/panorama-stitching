@@ -34,25 +34,29 @@ for i in range(len(displacements)):
 maxx -= minx
 maxy -= miny
 result = np.zeros((math.ceil(maxx), math.ceil(maxy),3))
-index = 0
+now = 0
 print(result.shape[1])
 for j in range(result.shape[1]):
 	print(j)
 	for i in range(result.shape[0]):
 		# for index in range(len(displacements)):
+		index = now
 		while index < len(displacements):
-			i += (delta*j)
-			pixel1, inside1 = msop.bilinear_interpolation(source[index%len(source)],[i-displacements[index][0]],[j-displacements[index][1]])
+			i_tmp = (i + delta*j)
+			pixel1, inside1 = msop.bilinear_interpolation(source[index%len(source)],[i_tmp-displacements[index][0]],[j-displacements[index][1]])
 			if inside1 > 0 and index < len(displacements) - 1:
-				pixel2, inside2 = msop.bilinear_interpolation(source[(index+1)%len(source)],[i-displacements[index+1][0]],[j-displacements[index+1][1]])
+				pixel2, inside2 = msop.bilinear_interpolation(source[(index+1)%len(source)],[i_tmp-displacements[index+1][0]],[j-displacements[index+1][1]])
 				if inside2 > 0:
 					l = displacements[index+1][1]
 					r = displacements[index][1]+(np.tan(source[index%len(source)].shape[1]/2/f)*f-np.tan(-source[index%len(source)].shape[1]/2/f)*f)
 					result[i][j] = pixel1*inside1*(r-j)/(r-l)+pixel2*inside2*(j-l)/(r-l)
 				else:
-					result[i][j] = pixel1*inside
-					break
-			index = index + 1
-print(result)
+					result[i][j] = pixel1*inside1
+				now = index
+				break
+			else:
+				index = index + 1
+plt.imshow(result)
+plt.show()
 
 
