@@ -139,6 +139,7 @@ def get_model(features_1, features_2, img_w, img_h, focal_length):
     
     
     # draw overlayed image and inliers/outliers matchings
+    '''
     name1 = 'pack2_rot/IMG_0027.JPG'
     name2 = 'pack2_rot/IMG_0018.JPG'
     im1 = Image.open(name1)
@@ -174,6 +175,7 @@ def get_model(features_1, features_2, img_w, img_h, focal_length):
     ax.set_xlim(-img_w / 2, img_w / 2 + bst_delta_x)
     ax.set_ylim(-img_h / 2, img_h / 2 + bst_delta_y)
     plt.show()
+    '''
     
     return bst_delta_x, bst_delta_y
 if __name__ == '__main__':
