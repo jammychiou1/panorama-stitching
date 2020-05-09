@@ -34,9 +34,13 @@ for i in range(len(displacements)):
 maxx -= minx
 maxy -= miny
 result = np.zeros((math.ceil(maxx), math.ceil(maxy),3))
-for i in range(result.shape[0]):
-	for j in range(result.shape[1]):
-		for index in range(len(displacements)):
+index = 0
+print(result.shape[1])
+for j in range(result.shape[1]):
+	print(j)
+	for i in range(result.shape[0]):
+		# for index in range(len(displacements)):
+		while index < len(displacements):
 			i += (delta*j)
 			pixel1, inside1 = msop.bilinear_interpolation(source[index%len(source)],[i-displacements[index][0]],[j-displacements[index][1]])
 			if inside1 > 0 and index < len(displacements) - 1:
@@ -48,5 +52,7 @@ for i in range(result.shape[0]):
 				else:
 					result[i][j] = pixel1*inside
 					break
+			index = index + 1
+print(result)
 
 
