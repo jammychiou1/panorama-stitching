@@ -6,13 +6,16 @@ import math
 import msop
 import displacement
 import projection
-f = 4*837
+#f = 4*837
+f = 3.9*837
+#f = 705
 filenames = []
 source = []
 for i in range(18,29):
     filenames.append("pack2_rot/IMG_00"+str(i)+".JPG")
+#filenames = ['parrington/prtn{}.jpg'.format(str(i).zfill(2)) for i in range(0, 18)]
+#print(filenames)
 displacements = displacement.displacement(filenames,f)
-delta = (displacements[-1][1] - displacements[0][1])/(displacements[-1][0]-displacements[0][0])
 '''
 for i in range(len(filenames)):
     im = Image.open(filenames[i])
@@ -25,15 +28,20 @@ im = Image.open(filenames[0])
 arr = np.asarray(im)
 img_h = arr.shape[0]
 img_w = arr.shape[1]
-minx = float(inf)
-miny = float(inf)
-maxx = -float(inf)
-maxy = -float(inf)
-for i in range(len(displacements)):
+minx = float('inf')
+miny = float('inf')
+maxx = -float('inf')
+maxy = -float('inf')
+delta = (displacements[-1][1] - displacements[0][1])/(displacements[-1][0]-displacements[0][0])
+#for i in range(len(displacements)):
+#    displacements[i][1] -= displacements[i][0] * delta
+for i in range(len(displacements) - 1):
     minx = min(minx, displacements[i][0] - (img_w - 1) / 2)
     maxx = max(maxx, displacements[i][0] + (img_w - 1) / 2)
     miny = min(miny, displacements[i][1] - (img_h - 1) / 2)
     maxy = max(maxy, displacements[i][1] + (img_h - 1) / 2)
+print(displacements)
+print(minx, maxx, miny, maxy)
 '''
 for i in range(len(displacements)):
     displacements[i][0] -= minx
@@ -42,10 +50,14 @@ maxx -= minx
 maxy -= miny
 '''
 center_x = (minx + maxx) / 2
-result_x = np.linspace(center_x - f * np.pi, center_x + f * np.pi, f * 2 * np.pi)
+tot_width = np.abs(displacements[-1][0] - displacements[0][1])
+print('tot_width', tot_width)
+print('expected', f * 2 * np.pi)
+#result_x = np.arange(minx, maxx)
+result_x = np.linspace(center_x - tot_width / 2, center_x + tot_width / 2, int(tot_width))
 result_y = np.arange(maxy, miny, -1)
 #result_xs, result_ys = np.meshgrid(result_x, result_y)
-result = np.zeros([result_y.shape[0], result_x.shape[0]])
+result = np.zeros([result_y.shape[0], result_x.shape[0], 3])
 weight_sum = np.zeros([result_y.shape[0], result_x.shape[0]])
 weight_sum += 1e-9
 for i, filename in enumerate(filenames):
@@ -55,19 +67,30 @@ for i, filename in enumerate(filenames):
     xin = (displacements[i][0] - (img_w - 1) / 2 - 3 < result_x) & (result_x < displacements[i][0] + (img_w - 1) / 2 + 3)
     yin = (displacements[i][1] - (img_h - 1) / 2 - 3 < result_y) & (result_y < displacements[i][1] + (img_h - 1) / 2 + 3)
     patch_xs, patch_ys = np.meshgrid(result_x[xin], result_y[yin])
-    weight = np.minimum(patch_xs + (img_w - 1) / 2, (img_w - 1) / 2 - patch_xs)
+    #print(patch_xs.shape)
+    #print(patch_ys.shape)
     patch_xs -= displacements[i][0]
     patch_ys -= displacements[i][1]
-    patch_ys -= patch_xs * delta
-    patch_xs, patch_ys = projection.planar_projection(patch_xs, patch_ys, focal_length)
+    weight = np.maximum(np.minimum(patch_xs + (img_w - 1) / 2, (img_w - 1) / 2 - patch_xs), 0)
+    weight **= 3
+    #patch_ys -= patch_xs * delta
+    patch_xs, patch_ys = projection.planar_projection(patch_xs, patch_ys, f)
     patch_xs, patch_ys = - patch_ys + (img_h - 1) / 2, patch_xs + (img_w - 1) / 2
     patch, inside = msop.bilinear_interpolation(arr, patch_xs, patch_ys)
     weight *= inside
-    result[yin, xin] += patch * weight
-    weight_sum += weight
-    plt.imshow(patch)
-    plt.show()
-result /= weight_sum
+    #print(yin)
+    #print(xin)
+    for pi, ri in enumerate(np.flatnonzero(yin)):
+        for pj, rj in enumerate(np.flatnonzero(xin)):
+            #print(ri, rj)
+            result[ri, rj] += patch[pi, pj] * weight[pi, pj]
+            weight_sum[ri, rj] += weight[pi, pj]
+            
+    #result[yin, xin] += patch * weight[:, np.newaxis]
+    #fig, ax = plt.subplots()
+    #ax.imshow(patch * inside[..., np.newaxis])
+    #plt.show()
+result /= weight_sum[..., np.newaxis]
 '''
 now = 0
 print(result.shape[1])
@@ -92,7 +115,11 @@ for j in range(result.shape[1]):
             else:
                 index = index + 1
 '''                
-plt.imshow(result)
-plt.show()
-
+#fig, ax = plt.subplots()
+#ax.imshow(result)
+#ax.imshow(result, extent=(result_x[0] - 0.5, result_x[-1] + 0.5, result_y[-1] + 0.5, result_y[0] - 0.5))
+#ax.plot([minx, maxx], [miny, maxy])
+#plt.show()
+im = Image.fromarray((result * 255).astype(np.uint8))
+im.save('pano.png')
 

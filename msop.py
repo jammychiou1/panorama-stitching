@@ -81,6 +81,7 @@ def msop(img_name, base_lvl = 1):
                     
         discriptors: list of numpy arrays with shape = (features_count, 8, 8)
     '''
+    print('getting features of {}'.format(img_name))
     im = Image.open(img_name)
     im = im.convert('L')
     arrs = [np.asarray(im, dtype=np.float)]
