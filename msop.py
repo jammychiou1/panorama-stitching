@@ -49,10 +49,10 @@ def bilinear_interpolation(arr, xs, ys):
     Idl = arr[ds, ls]
     Idr = arr[ds, rs]
 
-    wul = (xs-us) * (ys-ls)
-    wur = (xs-us) * (rs-ys)
-    wdl = (ds-xs) * (ys-ls)
-    wdr = (ds-xs) * (rs-ys)
+    wul = (ds-xs) * (rs-ys)
+    wur = (ds-xs) * (ys-ls)
+    wdl = (xs-us) * (rs-ys)
+    wdr = (xs-us) * (ys-ls)
     
     #print(list(xs.shape) + [1] * (len(arr.shape) - 2))
     wul = wul.reshape(list(xs.shape) + [1] * (len(arr.shape) - 2))
@@ -61,7 +61,6 @@ def bilinear_interpolation(arr, xs, ys):
     wdr = wdr.reshape(list(xs.shape) + [1] * (len(arr.shape) - 2))
     
     res = Iul * wul + Iur * wur + Idl * wdl + Idr * wdr
-    
     return res, inside
     
 def msop(img_name, base_lvl = 1):

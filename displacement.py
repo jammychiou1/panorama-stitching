@@ -7,18 +7,19 @@ import motion
 def displacement(filenames, focal_length):
     displace = [np.asarray([0,0])]
     feature = []
-    if 0 == 1:
+    if 1 == 1:
         for i in range(len(filenames)):
-            feature.append(msop.msop(filenames[i], 1))
+            feature.append(msop.msop(filenames[i], 0))
         import pickle
-        f = open('tmp.pck', 'wb')
+        f = open('tmp2_par.pck', 'wb')
         pickle.dump(feature, f)
     else:
         import pickle
-        f = open('tmp.pck', 'rb')
+        f = open('tmp2_par.pck', 'rb')
         feature = pickle.load(f)
     im = Image.open(filenames[0])
     arr = np.asarray(im)
+    print(arr.shape)
     img_h = arr.shape[0]
     img_w = arr.shape[1]
     for i in range(len(filenames) - 1):

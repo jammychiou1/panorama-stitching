@@ -6,14 +6,15 @@ import math
 import msop
 import displacement
 import projection
-#f = 4*837
-f = 3.9*837
-#f = 705
+f = 4*837
+f = 705
 filenames = []
 source = []
-for i in range(18,29):
-    filenames.append("pack2_rot/IMG_00"+str(i)+".JPG")
-#filenames = ['parrington/prtn{}.jpg'.format(str(i).zfill(2)) for i in range(0, 18)]
+#for i in range(18,28):
+#    filenames.append("pack2_rot/IMG_00"+str(i)+".JPG")
+#for i in range(7,17):
+#    filenames.append("pack1_png/IMG_00"+str(i).zfill(2)+".png")
+filenames = ['parrington/prtn{}.jpg'.format(str(i).zfill(2)) for i in range(0, 18)]
 #print(filenames)
 displacements = displacement.displacement(filenames,f)
 '''
@@ -33,8 +34,8 @@ miny = float('inf')
 maxx = -float('inf')
 maxy = -float('inf')
 delta = (displacements[-1][1] - displacements[0][1])/(displacements[-1][0]-displacements[0][0])
-#for i in range(len(displacements)):
-#    displacements[i][1] -= displacements[i][0] * delta
+for i in range(len(displacements)):
+    displacements[i][1] -= displacements[i][0] * delta
 for i in range(len(displacements) - 1):
     minx = min(minx, displacements[i][0] - (img_w - 1) / 2)
     maxx = max(maxx, displacements[i][0] + (img_w - 1) / 2)
@@ -49,21 +50,24 @@ for i in range(len(displacements)):
 maxx -= minx
 maxy -= miny
 '''
-center_x = (minx + maxx) / 2
-tot_width = np.abs(displacements[-1][0] - displacements[0][1])
+left = min(displacements[0][0], displacements[-1][0])
+right = max(displacements[0][0], displacements[-1][0])
+tot_width = right - left
 print('tot_width', tot_width)
 print('expected', f * 2 * np.pi)
 #result_x = np.arange(minx, maxx)
-result_x = np.linspace(center_x - tot_width / 2, center_x + tot_width / 2, int(tot_width))
+result_x = np.linspace(left, right, int(tot_width))
 result_y = np.arange(maxy, miny, -1)
 #result_xs, result_ys = np.meshgrid(result_x, result_y)
 result = np.zeros([result_y.shape[0], result_x.shape[0], 3])
 weight_sum = np.zeros([result_y.shape[0], result_x.shape[0]])
 weight_sum += 1e-9
-for i, filename in enumerate(filenames):
+for i in range(len(displacements)):
+    filename = filenames[i % len(filenames)]
     print(filename)
     im = Image.open(filename)
-    arr = np.asarray(im) / 255
+    arr = np.array(im) / 255
+    #print(arr.dtype)
     xin = (displacements[i][0] - (img_w - 1) / 2 - 3 < result_x) & (result_x < displacements[i][0] + (img_w - 1) / 2 + 3)
     yin = (displacements[i][1] - (img_h - 1) / 2 - 3 < result_y) & (result_y < displacements[i][1] + (img_h - 1) / 2 + 3)
     patch_xs, patch_ys = np.meshgrid(result_x[xin], result_y[yin])
@@ -73,7 +77,7 @@ for i, filename in enumerate(filenames):
     patch_ys -= displacements[i][1]
     weight = np.maximum(np.minimum(patch_xs + (img_w - 1) / 2, (img_w - 1) / 2 - patch_xs), 0)
     weight **= 3
-    #patch_ys -= patch_xs * delta
+    patch_ys += patch_xs * delta
     patch_xs, patch_ys = projection.planar_projection(patch_xs, patch_ys, f)
     patch_xs, patch_ys = - patch_ys + (img_h - 1) / 2, patch_xs + (img_w - 1) / 2
     patch, inside = msop.bilinear_interpolation(arr, patch_xs, patch_ys)
@@ -87,9 +91,20 @@ for i, filename in enumerate(filenames):
             weight_sum[ri, rj] += weight[pi, pj]
             
     #result[yin, xin] += patch * weight[:, np.newaxis]
-    #fig, ax = plt.subplots()
-    #ax.imshow(patch * inside[..., np.newaxis])
+    #print(patch_xs.dtype)
+    #print(patch_xs)
+    #print(patch_ys)
+    
+    #fig, axes = plt.subplots(ncols=2)
+    #axes[0].imshow(patch_xs)
+    #axes[1].imshow(patch_ys)
+    #fig, axes = plt.subplots(ncols=2)
+    #axes[0].plot(patch_xs[100])
+    #fig, axes = plt.subplots(ncols=2)
+    #axes[0].imshow(arr)
+    #axes[1].imshow(patch * inside[..., np.newaxis])
     #plt.show()
+    
 result /= weight_sum[..., np.newaxis]
 '''
 now = 0

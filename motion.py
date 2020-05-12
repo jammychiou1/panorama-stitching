@@ -61,12 +61,12 @@ def bipartite(features_1, features_2):
             edges.append(None)
     return edges
     
-def get_model(features_1, features_2, img_w, img_h, focal_length):
+def get_model(features_1, features_2, img_h, img_w, focal_length):
     '''
     Input:
         features_1, features_2: msop feature returned by msop.msop() (as a tuple (feature_xs, feature_ys, discriptors))
-        img_w: width of image
         img_h: height of image
+        img_w: width of image
         focal_length: focal length
     Output:
         delta_x, delta_y: computed displacement
@@ -114,8 +114,8 @@ def get_model(features_1, features_2, img_w, img_h, focal_length):
     bst_delta_x = 0
     bst_delta_y = 0
     bst_inliers = []
-    for t in range(10000):
-        print('try {}/{}, best: {}'.format(t+1, 10000, len(bst_inliers)), end='\r')
+    for t in range(500):
+        print('try {}/{}, best: {}'.format(t+1, 500, len(bst_inliers)), end='\r')
         k = 3
         sample = random.sample(eg_list, k)
         delta_x = 0
@@ -135,13 +135,13 @@ def get_model(features_1, features_2, img_w, img_h, focal_length):
             bst_inliers = inliers
     print()
     print(bst_delta_x, bst_delta_y)
-    print(len(bst_inliers))
+    #print(len(bst_inliers))
     
     
     # draw overlayed image and inliers/outliers matchings
     '''
-    name1 = 'pack2_rot/IMG_0027.JPG'
-    name2 = 'pack2_rot/IMG_0018.JPG'
+    #name1 = 'pack2_rot/IMG_0027.JPG'
+    #name2 = 'pack2_rot/IMG_0018.JPG'
     im1 = Image.open(name1)
     arr1 = np.asarray(im1) / 255
     im2 = Image.open(name2)
@@ -156,12 +156,17 @@ def get_model(features_1, features_2, img_w, img_h, focal_length):
     xs, ys = projection.planar_projection(xs, ys, focal_length)
     xs, ys = - ys + (img_h - 1) / 2, xs + (img_w - 1) / 2
     projected1, inside = msop.bilinear_interpolation(arr1, xs, ys)
+    print(inside.shape)
+    plt.imshow(inside)
+    plt.show()
     projected1 *= inside[..., np.newaxis]
     projected1 = np.concatenate([projected1, inside[..., np.newaxis]], 2)
     projected2, inside = msop.bilinear_interpolation(arr2, xs, ys)
     projected2 *= inside[..., np.newaxis]
     projected2 = np.concatenate([projected2, inside[..., np.newaxis]], 2)
     fig, ax = plt.subplots()
+    projected1[:, :, 3] *= 0.5
+    projected2[:, :, 3] *= 0.5
     ax.imshow(projected1, extent=(-img_w / 2, img_w / 2, -img_h / 2, img_h / 2))
     #axes[0].scatter()
     ax.imshow(projected2, extent=(-img_w / 2 + bst_delta_x, img_w / 2 + bst_delta_x, -img_h / 2 + bst_delta_y, img_h / 2 + bst_delta_y))
@@ -170,13 +175,18 @@ def get_model(features_1, features_2, img_w, img_h, focal_length):
     for i, (a, b) in enumerate(eg_list):
         if i in bst_inliers:
             ax.plot([xs1[a], xs2[b] + bst_delta_x], [ys1[a], ys2[b] + bst_delta_y], color='r')
+            ax.scatter([xs1[a]], [ys1[a]], color='w')
+            ax.scatter([xs2[b] + bst_delta_x], [ys2[b] + bst_delta_y], color='k')
         else:
             ax.plot([xs1[a], xs2[b] + bst_delta_x], [ys1[a], ys2[b] + bst_delta_y], color='b')
+            ax.scatter([xs1[a]], [ys1[a]], color='w')
+            ax.scatter([xs2[b] + bst_delta_x], [ys2[b] + bst_delta_y], color='k')
     ax.set_xlim(-img_w / 2, img_w / 2 + bst_delta_x)
     ax.set_ylim(-img_h / 2, img_h / 2 + bst_delta_y)
     plt.show()
     '''
     
+    '''
     fig, ax = plt.subplots()
     for i, (a, b) in enumerate(eg_list):
         if i in bst_inliers:
@@ -184,7 +194,7 @@ def get_model(features_1, features_2, img_w, img_h, focal_length):
         else:
             ax.plot([xs1[a], xs2[b] + bst_delta_x], [ys1[a], ys2[b] + bst_delta_y], color='b')
     plt.show()
-    
+    '''
     return bst_delta_x, bst_delta_y
 if __name__ == '__main__':
     #name1 = 'parrington/prtn02.jpg'
@@ -206,7 +216,7 @@ if __name__ == '__main__':
     im1 = Image.open(name1)
     arr1 = np.asarray(im1)
     
-    get_model(feat1, feat2, arr1.shape[1], arr1.shape[0], 4*837)
+    get_model(feat1, feat2, arr1.shape[0], arr1.shape[1], 4*837)
     
     # draw separate image and candidate match
     '''
